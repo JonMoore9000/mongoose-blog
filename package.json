@@ -1,0 +1,17 @@
+{
+  "name": "mongoose-blog",
+  "version": "1.0.0",
+  "description": "blog challenge with mongoose",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.14.1",
+    "morgan": "^1.8.0",
+    "mongoose": "^4.8.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
