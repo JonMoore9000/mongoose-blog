@@ -1,26 +1,34 @@
 const mongoose = require('mongoose');
 
 //SCHEMA FOR BLOGS
-const blogSchema = mongoose.Schema({
-	title: {type:String, required: true},
-    content: {type:String, required: true},
-    author: {type:String, required: true},
-    created: {type:String, required: true}
+const blogPostSchema = mongoose.Schema({
+	  title: {type: String, required: true},
+    content: {type: String},
+    author: {
+      firstName: String, 
+      lastName: String
+    },
+    created: {type: Date, default: Date.now}
 });
 
 
+// VIRTUAL INSTANCE
+blogPostSchema.virtual('authorName').get(function() {
+  return `${this.author.firstName} ${this.author.lastNAme}`.trim()});
+
+
 // INSTANCE SCHEME
-blogSchema.methods.apiRepr = function() {
+blogPostSchema.methods.apiRepr = function() {
 
   return {
     id: this._id,
-    name: this.name,
-    content: this.cuisine,
-    author: this.borough,
-    created: this.grade,
+    title: this.title,
+    content: this.content,
+    author: this.authorName,
+    created: this.created,
   };
 }
 
-const BlogPost = mongoose.model('BlogPost', blogSchema);
+const BlogPost = mongoose.model('Blogs', blogPostSchema);
 
 module.exports = {BlogPost};
