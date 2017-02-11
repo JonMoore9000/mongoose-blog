@@ -14,7 +14,7 @@ const blogPostSchema = mongoose.Schema({
 
 // VIRTUAL INSTANCE
 blogPostSchema.virtual('authorName').get(function() {
-  return `${this.author.firstName} ${this.author.lastNAme}`.trim()});
+  return `${this.author.firstName} ${this.author.lastName}`.trim()});
 
 
 // INSTANCE SCHEME
