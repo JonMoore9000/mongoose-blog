@@ -21,42 +21,18 @@ chai.use(chaiHttp);
 function seedBlogData() {
   console.info('seeding blog post data');
   const seedData = [];
-
   for (let i=1; i<=10; i++) {
-    seedData.push(generateBlogData());
+    seedData.push({
+      author: {
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName()
+      },
+      title: faker.lorem.sentence(),
+      content: faker.lorem.text()
+    });
   }
   // this will return a promise
   return BlogPost.insertMany(seedData);
-}
-
-// used to generate data to put in db
-function generateTitleName() {
-  const titles = [
-    '11 things -- you won\'t believe #4', '13 things -- you won\'t believe #4', '15 things -- you won\'t believe #4'];
-  return titles[Math.floor(Math.random() * titles.length)];
-}
-
-// used to generate data to put in db
-function generateContentType() {
-  const content = ['Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum'];
-  return contents[Math.floor(Math.random() * contents.length)];
-}
-
-// used to generate data to put in db
-function generateAuthor() {
-  const authors = ['Sally Smith', 'Billy Smith', 'Wilson Wilters'];
-  return author = authors[Math.floor(Math.random() * authors.length)];
-}
-
-// generate an object represnting a restaurant.
-// can be used to generate seed data for db
-// or request.body data
-function generateBlogData() {
-  return {
-    title: generateTitleName(),
-    content: generateContentType(),
-    author: generateAuthor()
-  }
 }
 
 
@@ -113,11 +89,11 @@ describe('BlogPosts API resource', function() {
           res = _res;
           res.should.have.status(200);
           // otherwise our db seeding didn't work
-          res.body.blogs.should.have.length.of.at.least(1);
+          res.body.should.have.length.of.at.least(1);
           return BlogPost.count();
         })
         .then(function(count) {
-          res.body.blogs.should.have.length.of(count);
+          res.body.should.have.length.of(count);
         });
     });
 
@@ -125,32 +101,29 @@ describe('BlogPosts API resource', function() {
     it('should return blogs with right fields', function() {
       // Strategy: Get back all restaurants, and ensure they have expected keys
 
-      let resBlogPost;
+      let resBlog;
       return chai.request(app)
         .get('/posts')
         .then(function(res) {
           res.should.have.status(200);
           res.should.be.json;
-          res.body.blogs.should.be.a('array');
-          res.body.blogs.should.have.length.of.at.least(1);
+          res.body.should.be.a('array');
+          res.body.should.have.length.of.at.least(1);
 
-          res.body.blogs.forEach(function(blog) {
+          res.body.forEach(function(blog) {
             blog.should.be.a('object');
-            blogs.should.include.keys(
+            blog.should.include.keys(
               'title', 'content', 'author');
           });
-          resBLogPost = res.body.blogs[0];
-          return BlogPost.findById(resBlogPost.id);
+          resBlog = res.body[0];
+          return BlogPost.findById(resBlog.id);
         })
-        .then(function(blog) {
+        .then(blog => {
 
-          resBLogPost.id.should.equal(blog.id);
-          resBLogPost.name.should.equal(blog.name);
-          resBLogPost.cuisine.should.equal(blog.cuisine);
-          resBLogPost.borough.should.equal(blog.borough);
-          resBLogPost.address.should.contain(blog.address.building);
-
-          resBLogPost.grade.should.equal(blog.grade);
+          resBlog.id.should.equal(blog.id);
+          resBlog.title.should.equal(blog.title);
+          resBlog.content.should.equal(blog.content);
+          resBlog.author.should.equal(blog.authorName);
         });
     });
   });
@@ -162,8 +135,14 @@ describe('BlogPosts API resource', function() {
     // the data was inserted into db)
     it('should add a new blog', function() {
 
-      const newBlogPost = generateBlogData();
-      //let mostRecentGrade;
+      const newBlogPost = {
+        author: {
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+      },
+      title: faker.lorem.sentence(),
+      content: faker.lorem.text()
+    };
 
       return chai.request(app)
         .post('/posts')
@@ -174,17 +153,18 @@ describe('BlogPosts API resource', function() {
           res.body.should.be.a('object');
           res.body.should.include.keys(
             'title', 'content', 'author');
-          res.body.name.should.equal(newBlog.name);
           // cause Mongo should have created id on insertion
           res.body.id.should.not.be.null;
           res.body.title.should.equal(newBlogPost.title);
           res.body.content.should.equal(newBlogPost.content);
-          res.body.author.should.equal(newBlogPost.author);
+          res.body.author.should.equal(
+            `${newBlogPost.author.firstName} ${newBlogPost.author.lastName}`);
         })
-        .then(function(restaurant) {
-          blog.title.should.equal(newBlogPost.title);
-          blog.content.should.equal(newBlogPost.content);
-          blog.author.should.equal(newBlogPost.author);
+          .then(function(blogpost) {
+          blogPost.title.should.equal(newBlogPost.title);
+          blogPost.content.should.equal(newBlogPost.content);
+          blogPost.author.firstName.should.equal(newBlogPost.author.firstName);
+          blogPost.author.lastName.should.equal(newBlogPost.author.lastName);
         });
     });
   });
